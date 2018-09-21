@@ -1,0 +1,47 @@
+h1 {
+    margin: 20px;
+    width: 350px;
+    margin-left: auto;
+    margin-right: auto;
+}
+#canvas {
+    border: 1px solid black;
+    margin: 10px;
+    margin-left: 20px;
+    float: left;
+}
+input {
+    width: 200px;
+    margin-left: 20px;
+}
+input:invalid {
+    border: 1px solid red;
+}
+input:valid {
+    border: 1px solid black;
+}
+p {
+    clear: left;
+    margin: 0 0 15px 20px;
+}
+#userInputBox {
+    margin-left: 0;
+    margin-top: 10px;
+    float: left;
+    width: 450px;
+}
+#radioBtns {
+    margin: 10px 0;
+}
+#submitBtn {
+    display: block;
+    width: 80px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.radioBtn {
+    width: 50px;
+}
+.inprogress {
+    color: #808080;
+}

@@ -1,0 +1,304 @@
+<!doctype html>
+<html>
+<head>
+    <title>Canvas test</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="vis_sort_style.css">
+</head>
+<body>
+	<h1>Javascript visual sort</h1>
+<canvas id="canvas" width="295" height="400"></canvas>
+
+<div id='userInputBox'>
+    <p>Enter up to 10 numbers separated by commas OR generate random numbers</p>
+    <input type="text" name="numToSort" id='numToSort'>
+    <button id="randomNumBtn">Random numbers</button>
+    <div id='radioBtns'>
+        <input type="radio" class="radioBtn" id="bubbleSort"
+         name="sort" value="bubbleSort">
+        <label for="bubbleSort">Bubble sort</label><br />
+
+        <input type="radio" class="radioBtn" id="insertionSort"
+         name="sort" value="insertionSort">
+        <label for="insertionSort">Insertion sort</label><br />
+
+        <input type="radio" class="radioBtn" id="selectionSort"
+         name="sort" value="selectionSort">
+        <label for="selectionSort">Selection sort</label><br />
+
+        <input type="radio" class="radioBtn" id="shellSort"
+         name="sort" value="shellSort">
+        <label for="shellSort">Shell sort</label><br />
+    </div>
+    <div>
+        <button id="submitBtn">Submit</button>
+    </div>
+    <p id='enteredNum'>Entered array: </p>
+	<p id='sortedNum'>Sorted array: </p>
+	<p id='swapNum'>Number of swaps: </p>
+</div>
+
+<script>
+var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext('2d');
+var bars = []; // array of objects type Bar
+var actionQueue = []; // array of sorting actions
+var actionQueueLength =0;
+var arr = [];
+var myVar;
+var enteredNumEl = document.getElementById('enteredNum');
+var sortedNumEl = document.getElementById('sortedNum');
+
+function Bar(x, y) {
+    this.x = x; // order
+    this.y = y; // value
+}
+
+function init() {
+    for (var i = 0; i < arr.length; i++) {
+        var bar = new Bar(i, arr[i]);
+        bars.push(bar);
+    }
+}
+
+function draw() {
+    for(let i = 0; i < bars.length; i++) {
+        ctx.fillStyle ='#B2B2B2';
+        ctx.fillRect(25*(bars[i].x + 1), 200-bars[i].y*10, 20, bars[i].y*10+1);
+    }
+}
+
+// one action for each swap
+function Action(toValue, toIndex, fromValue, fromIndex ) {
+    this.toValue = toValue; // value
+    this.toIndex = toIndex; // index
+    this.fromValue = fromValue;
+    this.fromIndex = fromIndex;
+}
+
+// bubble sort
+function bSort() {
+    for (var j = 0; j < arr.length-1; j++) {
+        for (var i = 0; i < arr.length-j-1; i++) {
+            if (arr[i] > arr[i+1]) {
+                // swap places
+                temp = arr[i];
+                arr[i] = arr[i+1];
+                arr[i+1] = temp;
+                var action = new Action(arr[i], i, arr[i+1], i+1);
+                actionQueue.push(action);
+            }
+        }
+    }
+    actionQueueLength = actionQueue.length;
+    console.log('actionQueueLength: ' + actionQueueLength);
+}
+// insertion sort
+function iSort() {
+    var temp;
+    var j;
+    var count = 0;
+    for (var i = 1; i < arr.length; i++) {
+      j = i;
+      temp = arr[i];
+      console.log('i: ' + i + ' ,j: ' + j);
+      while (j >= 0 && temp < arr[j-1]) {
+        arr[j] = arr[j-1];
+        arr[j-1] = temp;
+        var action = new Action(arr[j], j, arr[j-1], j-1);
+        actionQueue.push(action);
+        --j;
+      }
+    }
+    actionQueueLength = actionQueue.length;
+}
+
+// selection sort
+function sSort() {
+    var temp=0;
+    var min=0;
+    var minIndex=0;
+    for (var i = 0; i < arr.length-1; i++) {
+        min = arr[i];
+        minIndex = i;
+        for (var j = i; j < arr.length; j++) {
+        	console.log('j: ' + j + " arr[j]: " + arr[j]);
+    	    if (arr[j] < min) {
+                min = arr[j];
+                minIndex = j;
+                console.log('min: ' + min);
+            }
+        }
+        temp = arr[i];
+        console.log('min: ' + temp + ' indexOf min: ' + minIndex);
+        arr[i] = min;
+        arr[minIndex] = temp;
+        var action = new Action(arr[i], i, arr[minIndex], minIndex);
+        actionQueue.push(action);
+        console.log(arr);
+    }
+    actionQueueLength = actionQueue.length;	
+}
+
+
+ /* Shell sort */
+function shellSort() {
+	var gap = Math.floor(arr.length/2);
+	var temp;
+	var n;
+	// calculate the gap
+	for (var i = gap; i > 0; i = Math.floor(i/2)) {
+	  console.log('i: ' + i);
+	  // shift the gap
+	  for (var k = 0; k < i; k++) {
+	    // iterate through gap; push the smallest number to
+	    // the left
+	    for (var j = i + k; j < arr.length; j += i) {
+	      n = j;
+	      temp = arr[n];
+	      while (n-i >= 0 && temp < arr[n-i]) {
+	        arr[n] = arr[n-i];
+	        arr[n-i] = temp;
+	        var action = new Action(arr[n], n, arr[n-i], n-i);
+        	actionQueue.push(action);
+	        n -= i;
+	      }
+	    }
+	  }
+	}
+	actionQueueLength = actionQueue.length;	
+}
+// Merge sort
+// Split the array into halves and merge them recursively 
+var count =0;
+function mergeSort(arr) {
+	count++;
+  if (arr.length === 1) {
+  	console.log('reached the end');
+    // return once we hit an array with a single item
+    return arr;
+  }
+  console.log('count ' + count);
+  const middle = Math.floor(arr.length / 2) // get the middle item of the array rounded down
+  const left = arr.slice(0, middle) // items on the left side
+  const right = arr.slice(middle) // items on the right side
+  actionQueueLength = actionQueue.length;
+  console.log('actionQueueLength' + actionQueueLength);
+  return merge(
+    mergeSort(left),
+    mergeSort(right)
+  );
+}
+
+// compare the arrays item by item and return the concatenated result
+function merge (left, right) {
+  let result = []
+  let indexLeft = 0
+  let indexRight = 0
+
+  while (indexLeft < left.length && indexRight < right.length) {
+    if (left[indexLeft] < right[indexRight]) {
+      result.push(left[indexLeft])
+      indexLeft++
+    } else {
+      result.push(right[indexRight])
+      indexRight++
+    }
+    var action = new Action(result[result.length-1], result.length-1, result[result.length], result.length);
+    actionQueue.push(action);
+  }
+  return result.concat(left.slice(indexLeft)).concat(right.slice(indexRight));
+}
+
+function updateBars() {
+    var firstEl = actionQueue.shift();
+    for (var i = 0; i < bars.length; i++) {
+        if(i === firstEl.toIndex) {
+            bars[i].y = firstEl.toValue;
+            bars[i].x = firstEl.toIndex;
+        }
+        else if (i === firstEl.fromIndex) {
+            bars[i].y = firstEl.fromValue;
+            bars[i].x = firstEl.fromIndex;
+        }
+    }
+}
+
+function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    draw();
+    if (actionQueue.length <= 0) {
+        clearInterval(myVar);
+        bars = [];
+        sortedNumEl.innerHTML = 'Sorted array: ' + arr;
+        document.getElementById('swapNum').innerHTML = 'Number of swaps: ' + actionQueueLength;
+        console.log('if statement!');
+    }
+    updateBars();
+    console.log(actionQueue.length);
+}
+
+document.getElementById("submitBtn").addEventListener("click", function() {
+	console.log('submit button is clicked');
+	arr = [];
+	actionQueue = [];
+	actionQueueLength =0;
+    sortedNumEl.innerHTML = 'Sorted array: '; // cleaning previous results
+    document.getElementById('swapNum').innerHTML = 'Number of swaps: ';
+    var userInput = document.getElementsByTagName("input")[0].value;
+    userInput.trim();
+    var regEx = /,+/; // matches 1 or more commas
+    var newArr = userInput.split(regEx, 10);
+    for (let i = 0; i < newArr.length; i++) {
+        newArr[i] = +newArr[i]; // convert to number
+        // check if newArr[i] is NaN
+        if(newArr[i] === newArr[i] && newArr[i] !='') {
+            arr.push(newArr[i]);
+        }
+    }
+	init();
+    enteredNumEl.innerHTML = 'Entered array: ' + arr;
+    draw();
+    if (document.getElementById('bubbleSort').checked) {
+    	console.log('bubbleSort');
+        bSort();
+    }
+    else if (document.getElementById('insertionSort').checked) {
+    	console.log('insertionSort');
+        iSort();
+    }
+    else if (document.getElementById('selectionSort').checked) {
+    	console.log('selectionSort');
+        sSort();
+    }
+    else if (document.getElementById('shellSort').checked) {
+    	console.log('shellSort');
+        shellSort();
+    }
+    else if (document.getElementById('mergeSort').checked) {
+    	console.log('mergeSort');
+        arr = mergeSort(arr);
+    }
+    else {
+    	console.log(document.getElementById('bubbleSort').value);
+    	qSort();
+    }
+    console.log(arr);
+    console.log(actionQueue);
+    actionQueueLength = actionQueue.length;
+    console.log('actionQueueLength: ' + actionQueueLength);
+    myVar = setInterval(loop, 200);
+    loop(); 
+});
+
+document.getElementById('randomNumBtn').addEventListener('click', function(){
+	document.getElementById('numToSort').value = '';
+	var randomNumArr =[];
+    for (let i = 0; i < 10; i++) {
+        randomNumArr.push(Math.floor(Math.random() * 35)-15);
+    }
+    document.getElementById('numToSort').value = randomNumArr;
+});
+</script>
+</body>
+</html>
